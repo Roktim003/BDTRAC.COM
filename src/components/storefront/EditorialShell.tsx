@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Navbar from "./Navbar";
 import ProductDrawer from "./ProductDrawer";
+import CartDrawer from "@/components/checkout/CartDrawer";
 
 /**
  * EditorialShell (Part 3) — chrome for the editorial surface
@@ -26,6 +27,7 @@ export default function EditorialShell({ children }: { children: ReactNode }) {
         </Link>
       </footer>
       <ProductDrawer />
+      <CartDrawer />
     </div>
   );
 }

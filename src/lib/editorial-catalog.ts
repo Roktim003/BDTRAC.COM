@@ -215,6 +215,18 @@ export function stockBySize(
   });
 }
 
+/** Resolve a variant (with its product) by SKU — used by the cart
+    store for stock limits and by checkout line rendering. */
+export function getVariantBySku(
+  sku: string,
+): { product: EditorialProduct; variant: EditorialVariant } | undefined {
+  for (const product of EDITORIAL_PRODUCTS) {
+    const variant = product.variants.find((v) => v.sku === sku);
+    if (variant) return { product, variant };
+  }
+  return undefined;
+}
+
 export const EDITORIAL_CATEGORIES: { value: EditorialCategory | "ALL"; label: string }[] = [
   { value: "ALL", label: "All" },
   { value: "HEAVYWEIGHT_TEE", label: "Heavyweight Tees" },

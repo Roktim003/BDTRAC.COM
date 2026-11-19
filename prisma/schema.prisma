@@ -92,6 +92,7 @@ enum PaymentMethod {
   COD
   BKASH
   NAGAD
+  SSLCOMMERZ
 }
 
 enum PaymentStatus {

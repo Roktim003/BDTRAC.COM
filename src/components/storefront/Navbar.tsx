@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Menu, Search, ShoppingBag, X } from "lucide-react";
-import { useBagCount } from "@/store/bag-store";
+import { useCartCount } from "@/store/useCartStore";
 import { useUiStore } from "@/store/ui-store";
 import { EDITORIAL_PRODUCTS } from "@/lib/editorial-catalog";
 import { formatBDT } from "@/lib/bd-utils";
@@ -23,7 +23,7 @@ const LINKS = [
 ];
 
 export default function Navbar() {
-  const count = useBagCount();
+  const count = useCartCount();
   const overlay = useUiStore((s) => s.overlay);
   const toggleOverlay = useUiStore((s) => s.toggleOverlay);
   const closeOverlay = useUiStore((s) => s.closeOverlay);
@@ -78,10 +78,15 @@ export default function Navbar() {
           >
             {searchOpen ? <X size={20} /> : <Search size={20} />}
           </button>
-          <Link href="/drop-04#grid" className="sf-nav-bag" aria-label={`Bag, ${count} items`}>
+          <button
+            type="button"
+            className="sf-nav-bag"
+            aria-label={`Bag, ${count} items`}
+            onClick={() => toggleOverlay("cart")}
+          >
             <ShoppingBag size={20} />
             <span className="sf-nav-bag-count font-spec">{count}</span>
-          </Link>
+          </button>
         </div>
       </div>
 

@@ -148,6 +148,21 @@ Import alias: `@/*` maps to `./src/*` (tsconfig `paths`). No relative
   is a separate, explicitly-approved step if a later part requires it.
 - Production `bdtrac.com` still serves the previous site; deploying this
   codebase follows `docs/DEPLOY.md` and is a separate approved step.
+- Part 4 (2026-11-19): cart + checkout + order API for the editorial
+  catalog. Canonical cart is src/store/useCartStore.ts (bag-store is a
+  deprecated re-export): stock-clamped quantities, TRAC10 = 10% off,
+  free-shipping progress on the DISCOUNTED subtotal toward ৳3,500.
+  Checkout form (checkout/CheckoutModal.tsx, shared by the modal and
+  /drop-04/checkout) validates with lib/order-schema.ts — the same zod
+  schema the API enforces. Order API: POST /api/editorial-orders
+  (zod → promo check → IP 5/10min + phone 3/10min rate limits in
+  lib/rate-limit.ts → 503 when DATABASE_URL unset → atomic Prisma
+  transaction with conditional stock decrement, server-computed totals,
+  sequential TRAC-#### numbers with P2002 retry, QUEUED SmsLog).
+  PATH NOTE: /api/orders and /checkout remain the legacy catalog's live
+  Phase 7 engine/pages; the editorial API + page take those paths over
+  at the Prisma catalog cutover. PaymentMethod enum gained SSLCOMMERZ.
+  Prisma client is now lazy (getPrismaClient()) — never import-time.
 - Part 3 (2026-11-19): editorial storefront in src/components/storefront
   (Navbar, EditorialHero, ProductGrid, ProductDrawer, EditorialShell),
   assembled at /drop-04; slug PDPs at /product/[slug] (SSG). Editorial

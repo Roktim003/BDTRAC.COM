@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, ChevronDown, Ruler, X } from "lucide-react";
 import EditorialImage from "./EditorialImage";
 import { useUiStore } from "@/store/ui-store";
-import { useBagStore } from "@/store/bag-store";
+import { useCartStore } from "@/store/useCartStore";
 import {
   getEditorialProduct,
   stockBySize,
@@ -129,7 +129,7 @@ function Accordion({
 }
 
 export function ProductDetailView({ product }: { product: EditorialProduct }) {
-  const addLine = useBagStore((s) => s.addLine);
+  const addItem = useCartStore((s) => s.addItem);
   const [color, setColor] = useState(product.colors[0].name);
   const [size, setSize] = useState<ApparelSize>("M");
   const [imageIndex, setImageIndex] = useState(0);
@@ -151,7 +151,7 @@ export function ProductDetailView({ product }: { product: EditorialProduct }) {
 
   const addToBag = () => {
     if (!variant) return;
-    addLine({
+    addItem({
       slug: product.slug,
       title: product.title,
       sku: variant.sku,

@@ -1,9 +1,8 @@
 /**
- * BDTRAC — checkout components barrel (Part 1 scaffold).
- *
- * Checkout-only components (address form, COD / bKash / Nagad steps,
- * bilingual en/bn copy) live in this folder from the checkout parts onward
- * and are re-exported here. Bengali strings render with the .font-bn class
- * (Noto Sans Bengali) defined in src/app/globals.css.
+ * BDTRAC — checkout components barrel (Part 1 scaffold, filled Part 4).
+ * CartDrawer, the bilingual CheckoutModal and its CheckoutForm (shared
+ * with the /drop-04/checkout page). Bengali strings render with the
+ * .font-bn class (Noto Sans Bengali) defined in src/app/globals.css.
  */
-export {};
+export { default as CartDrawer } from "./CartDrawer";
+export { default as CheckoutModal, CheckoutForm } from "./CheckoutModal";
