@@ -148,6 +148,21 @@ Import alias: `@/*` maps to `./src/*` (tsconfig `paths`). No relative
   is a separate, explicitly-approved step if a later part requires it.
 - Production `bdtrac.com` still serves the previous site; deploying this
   codebase follows `docs/DEPLOY.md` and is a separate approved step.
+- Part 5 (2026-11-19): integrations. lib/sms.ts — provider adapters
+  (SSL Wireless default, BulkSMSBD; SMS_PROVIDER env), log-only mode
+  when unconfigured, SmsLog writes for order-linked messages, bilingual
+  templates (order confirmed template is verbatim per spec).
+  lib/couriers.ts — zone routing INSIDE→Steadfast, OUTSIDE→Pathao,
+  COURIER_DEFAULT pin / COURIER_FALLBACK override, typed payload
+  mappers, credential-gated dispatch (unconfigured = payload returned,
+  never faked as booked). POST /api/payments/webhook?provider=… —
+  SSLCommerz verify_sign MD5 chain + Nagad RSA + bKash query-back
+  verification (lib/payment-verify.ts), amount check, idempotent PAID
+  flip, courier dispatch + payment SMS on success, 503 fail-closed
+  without secrets. Tracking: GET /api/editorial-orders/track
+  (orderNumber + phone credential pair, IP rate-limited) and the page
+  at /drop-04/track — legacy /track keeps serving legacy orders until
+  cutover (the SMS template URL bdtrac.com/track resolves there).
 - Part 4 (2026-11-19): cart + checkout + order API for the editorial
   catalog. Canonical cart is src/store/useCartStore.ts (bag-store is a
   deprecated re-export): stock-clamped quantities, TRAC10 = 10% off,

@@ -19,6 +19,7 @@ const LINKS = [
   { label: "Drop 04", href: "/drop-04" },
   { label: "The Grid", href: "/drop-04#grid" },
   { label: "Lookbook", href: "/drop-04#lookbook" },
+  { label: "Track", href: "/drop-04/track" },
   { label: "Shop All TRAC", href: "/products" },
 ];
 

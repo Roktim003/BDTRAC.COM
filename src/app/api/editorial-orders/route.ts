@@ -11,6 +11,7 @@ import {
   promoDiscountBdt,
   type OrderReceipt,
 } from "@/lib/order-schema";
+import { sendOrderConfirmedSms } from "@/lib/sms";
 
 /**
  * Editorial order API (Part 4) — POST /api/editorial-orders.
@@ -23,9 +24,9 @@ import {
  *     to block fake COD spam, which typically rotates one of the two.
  *  3. ONE atomic Prisma transaction: each variant's stock is verified
  *     and decremented with a conditional update (stockCount >= qty),
- *     so two buyers can never claim the same last unit; the order, its
- *     items and a queued confirmation SmsLog are written together or
- *     not at all.
+ *     so two buyers can never claim the same last unit; the order and
+ *     its items are written together or not at all. The confirmation
+ *     SMS is dispatched after commit via lib/sms.ts (logged to SmsLog).
  *  4. The receipt is returned with server-computed totals.
  *
  * This route is the Prisma catalog's order API. The legacy catalog's
@@ -95,7 +96,15 @@ export async function POST(req: Request) {
   }
 
   try {
-    const receipt = await placeOrderWithRetry(input);
+    const { receipt, orderId } = await placeOrderWithRetry(input);
+    // Confirmation SMS fires AFTER the transaction commits; the
+    // dispatcher logs to SmsLog and never throws into this response.
+    await sendOrderConfirmedSms({
+      orderId,
+      orderNumber: receipt.orderNumber,
+      phone: receipt.phone,
+      totalBdt: receipt.totalBdt,
+    });
     return NextResponse.json({ receipt }, { status: 201 });
   } catch (err) {
     if (err instanceof OrderError) {
@@ -114,14 +123,14 @@ export async function POST(req: Request) {
 
 async function placeOrderWithRetry(
   input: ReturnType<typeof createOrderSchema.parse>,
-): Promise<OrderReceipt> {
+): Promise<{ receipt: OrderReceipt; orderId: string }> {
   const prisma = getPrismaClient();
   // Order numbers are sequential (TRAC-1025, TRAC-1026, …). The count is
   // read inside the attempt; a unique-collision (P2002) retries with the
   // next number, up to 3 attempts.
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      return await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
         const count = await tx.order.count();
         const orderNumber = `TRAC-${1025 + count + attempt}`;
 
@@ -189,22 +198,11 @@ async function placeOrderWithRetry(
                 unitPriceBdt: l.unitPriceBdt,
               })),
             },
-            smsLogs: {
-              create: {
-                phone: input.phone,
-                message: `TRAC: Order ${orderNumber} confirmed. Total ${totalBdt} BDT. ${
-                  input.paymentMethod === "COD"
-                    ? "Please keep the amount ready for the courier."
-                    : "Payment instructions will follow by SMS."
-                }`,
-                provider: "PENDING",
-                status: "QUEUED",
-              },
-            },
           },
         });
 
         return {
+          orderId: order.id,
           orderNumber: order.orderNumber,
           customerName: input.customerName,
           phone: input.phone,
@@ -224,6 +222,8 @@ async function placeOrderWithRetry(
           totalBdt,
         };
       });
+      const { orderId, ...receipt } = result;
+      return { receipt: receipt as OrderReceipt, orderId };
     } catch (err) {
       const code = (err as { code?: string }).code;
       if (code === "P2002" && attempt < 2) continue; // orderNumber collision — retry
