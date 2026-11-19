@@ -1,0 +1,9 @@
+/**
+ * BDTRAC — storefront components barrel (Part 1 scaffold).
+ *
+ * Public-facing storefront components (header, hero, product rows, PDP)
+ * live in this folder from the next parts onward and are re-exported here.
+ * Legacy components still live in src/components and src/components/ui and
+ * migrate here feature by feature — do not duplicate them.
+ */
+export {};
