@@ -35,15 +35,19 @@ interface SmsProvider {
 /* ——— SSL Wireless (api.sslwireless.com, v3 send-sms) ——— */
 const sslWireless: SmsProvider = {
   name: "ssl-wireless",
+  // SMS_API_KEY is accepted as an alias for the SSL Wireless token.
   isConfigured: () =>
-    Boolean(process.env.SSL_WIRELESS_API_TOKEN && process.env.SSL_WIRELESS_SID),
+    Boolean(
+      (process.env.SSL_WIRELESS_API_TOKEN || process.env.SMS_API_KEY) &&
+        process.env.SSL_WIRELESS_SID,
+    ),
   async send(to, message) {
     try {
       const res = await fetch("https://sms.sslwireless.com/api/v3/send-sms", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          api_token: process.env.SSL_WIRELESS_API_TOKEN,
+          api_token: process.env.SSL_WIRELESS_API_TOKEN || process.env.SMS_API_KEY,
           sid: process.env.SSL_WIRELESS_SID,
           msisdn: to.replace("+", ""),
           sms: message,

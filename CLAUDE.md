@@ -148,6 +148,13 @@ Import alias: `@/*` maps to `./src/*` (tsconfig `paths`). No relative
   is a separate, explicitly-approved step if a later part requires it.
 - Production `bdtrac.com` still serves the previous site; deploying this
   codebase follows `docs/DEPLOY.md` and is a separate approved step.
+- Part 6 (2026-11-19): QA & performance audit (docs/PART6_QA_AUDIT.md).
+  EditorialImage migrated to next/image (fill + per-placement sizes,
+  hero/detail priority, shimmer skeleton, aspect-ratio frames = CLS-safe);
+  zero raw <img> remain repo-wide. Grids use minmax(0,1fr); size guide
+  scrolls internally; qty steppers 32px; coverflow dot hit area 24px.
+  SMS_API_KEY accepted as alias for the SSL Wireless token. README
+  rewritten (architecture + full env table). tsc strict: 0 errors.
 - Part 5 (2026-11-19): integrations. lib/sms.ts — provider adapters
   (SSL Wireless default, BulkSMSBD; SMS_PROVIDER env), log-only mode
   when unconfigured, SmsLog writes for order-linked messages, bilingual

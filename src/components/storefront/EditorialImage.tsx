@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 /**
- * Editorial image frame (Part 3). Renders the product/campaign asset when
- * it exists; until TRAC photography is shot, the frame falls back to an
- * editorial typographic plate (title + GSM spec on the surface tone) —
+ * Editorial image frame (Part 3, optimized Part 6). Renders the
+ * product/campaign asset through next/image — AVIF/WebP via
+ * next.config, responsive `sizes`, lazy by default, `priority` for the
+ * hero — inside a fixed-aspect frame, so the box is reserved before the
+ * bytes arrive (zero layout shift) and a shimmering skeleton covers the
+ * wait on slow 4G. Until TRAC photography is shot, a missing asset
+ * falls back to an editorial typographic plate (title + GSM spec) —
  * never a broken-image icon, never a stock photo passed off as product.
  */
 export default function EditorialImage({
@@ -15,6 +20,8 @@ export default function EditorialImage({
   spec,
   tone = 0,
   className = "",
+  sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+  priority = false,
 }: {
   src: string;
   alt: string;
@@ -22,18 +29,24 @@ export default function EditorialImage({
   spec?: string;
   tone?: number;
   className?: string;
+  sizes?: string;
+  priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   return (
     <div className={`sf-frame sf-tone-${tone % 4} ${className}`}>
+      {!failed && !loaded ? <div className="sf-frame-skeleton" aria-hidden="true" /> : null}
       {!failed ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={src}
           alt={alt}
-          loading="lazy"
+          fill
+          sizes={sizes}
+          priority={priority}
+          onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
-          className="sf-frame-img"
+          className={`sf-frame-img ${loaded ? "is-loaded" : ""}`}
         />
       ) : null}
       {failed ? (

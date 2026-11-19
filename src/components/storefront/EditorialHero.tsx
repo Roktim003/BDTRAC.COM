@@ -66,6 +66,8 @@ export default function EditorialHero() {
             title={product.title}
             spec={`${product.gsmWeight} GSM — ${product.fabricComposition}`}
             tone={active}
+            sizes="100vw"
+            priority
             className="sf-hero-frame"
           />
         ) : null}

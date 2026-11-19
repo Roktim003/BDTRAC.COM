@@ -172,6 +172,8 @@ export function ProductDetailView({ product }: { product: EditorialProduct }) {
           title={product.title}
           spec={`${product.gsmWeight} GSM — ANGLE ${imageIndex + 1}`}
           tone={imageIndex}
+          sizes="(max-width: 960px) 100vw, 620px"
+          priority
           className="sf-detail-main"
         />
         <div className="sf-detail-thumbs">
@@ -190,6 +192,7 @@ export function ProductDetailView({ product }: { product: EditorialProduct }) {
                 title={product.title}
                 spec={`0${i + 1}`}
                 tone={i}
+                sizes="76px"
               />
             </button>
           ))}

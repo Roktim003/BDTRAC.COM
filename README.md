@@ -1,65 +1,91 @@
-# TRAC — Premium Streetwear Storefront (13-Phase Rebuild, Oct 2025)
+# BDTRAC — TRAC Streetwear Commerce (bdtrac.com)
 
-The complete rebuild of **bdtrac.com**: Next.js 15 + React 19, server-validated
-commerce, customer accounts, a full admin CMS, and production persistence.
-Built phase-by-phase with a gate after each phase — see
-`docs/IMPLEMENTATION_PROGRESS.md` for the full log and `docs/QA_REPORT.md`
-for the final test results (65/65 checks).
+Next.js 15 + React 19 + TypeScript (strict). Two storefronts in one codebase:
 
-## Run it locally
+- **Legacy storefront** (`/`, `/products`, `/checkout`, `/track`, `/admin`) —
+  the 13-phase rebuild: admin CMS, accounts, doc-store persistence
+  (Postgres JSONB when `DATABASE_URL` is set, `.data/` files otherwise).
+- **Editorial storefront** (Parts 1–6, Nov 2026) — DROP 04 // CONCRETE &
+  MONSOON: `/drop-04`, `/product/[slug]`, `/drop-04/checkout`,
+  `/drop-04/track`, backed by a Prisma/PostgreSQL data layer, a bilingual
+  EN/BN checkout, a fraud-protected order API, and BD payment / courier /
+  SMS integrations. It takes over the canonical paths at cutover.
+
+## Quick start
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev            # http://localhost:3000 — no env needed locally
 ```
 
-No configuration needed locally: data persists to `.data/` JSON files and
-the admin password falls back to `admin123` **with a warning banner**
-(development only — production fails closed without env vars, see below).
+Editorial data layer (needs a PostgreSQL `DATABASE_URL`):
 
-- Storefront: `/` — Shop: `/products` — Product: `/products/<id>`
-- Track order: `/track` (order ID + mobile number)
-- Account: `/account` — Admin CMS: `/admin`
+```bash
+npm run db:validate    # prisma validate
+npm run db:generate    # generate the Prisma client
+npm run db:push        # create tables
+npm run db:seed        # 6 products, 60 variants (idempotent)
+npm run build          # prisma generate && next build
+```
 
-## How the store runs (no code needed)
+## Architecture (editorial)
 
-Everything commercial is edited in **/admin**: products (prices, photos,
-sizes, colours, stock flags), collections, orders + fulfilment status,
-delivery charges, promo codes, homepage sections/featured products,
-announcement bar, social links, store list, and the brand story.
-Changes go live on the next page load — the order engine reads the same
-data, so a price edited in admin is the price the next checkout charges.
+| Area | Where |
+|---|---|
+| Data models | `prisma/schema.prisma` — Product, ProductVariant, Order, OrderItem, SmsLog (money = integer BDT) |
+| BD utilities | `src/lib/bd-utils.ts` — `formatBDT`, BD phone validation/normalization, shipping ৳70 Dhaka / ৳130 outside, free over ৳3,500 |
+| Catalog mirror | `src/lib/editorial-catalog.ts` — mirrors the seed exactly until the Prisma read API lands |
+| Cart | `src/store/useCartStore.ts` — Zustand, persisted, stock-clamped, `TRAC10` = 10% off |
+| Order API | `POST /api/editorial-orders` — shared zod schema, IP + phone rate limits, atomic stock decrement |
+| Payments | `POST /api/payments/webhook?provider=sslcommerz\|bkash\|nagad` — verified signatures, idempotent PAID flip |
+| SMS | `src/lib/sms.ts` — SSL Wireless / BulkSMSBD adapters, `SmsLog`, log-only until configured |
+| Couriers | `src/lib/couriers.ts` — Pathao / Steadfast / RedX mappers, zone routing, credential-gated dispatch |
+| Tracking | `GET /api/editorial-orders/track` + `/drop-04/track` — order number + phone credential pair |
+| Images | `next/image` everywhere, AVIF/WebP, responsive `sizes`, skeleton shimmer, aspect-ratio frames (CLS-safe) |
 
-## Production
+## Environment variables
 
-Full runbook: **`docs/DEPLOY.md`** (staging-first, ~30–45 min).
-In short: set `DATABASE_URL` (Postgres — Supabase/Neon) and all stores
-persist there instead of `.data/`; set `ADMIN_PASSWORD` and
-`AUTH_SECRET` (the app refuses to run auth without them in production);
-optionally `RESEND_API_KEY` + `MAIL_FROM` for password-reset emails.
-`vercel.json` pins the Singapore region (closest to Bangladesh).
-Migrate existing local data with `npm run db:migrate`.
+Copy `.env.example` to `.env.local`. Everything fails closed: a missing
+secret disables that integration instead of simulating it.
 
-## Backups
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL (Prisma editorial layer + legacy doc-store) |
+| `ADMIN_PASSWORD`, `AUTH_SECRET` | Admin CMS + account sessions |
+| `NEXT_PUBLIC_SITE_URL` | Canonical site URL |
+| `RESEND_API_KEY`, `MAIL_FROM` | Transactional email (legacy) |
+| `SMS_PROVIDER` | `ssl-wireless` (default) or `bulksmsbd` |
+| `SMS_API_KEY` | SMS gateway token (alias for the SSL Wireless API token) |
+| `SSL_WIRELESS_API_TOKEN`, `SSL_WIRELESS_SID` | SSL Wireless credentials |
+| `BULKSMSBD_API_KEY`, `BULKSMSBD_SENDER_ID` | BulkSMSBD credentials |
+| `BKASH_APP_KEY`, `BKASH_APP_SECRET`, `BKASH_USERNAME`, `BKASH_PASSWORD`, `BKASH_BASE_URL` | bKash tokenized checkout (webhook verifies by query-back) |
+| `NAGAD_PUBLIC_KEY` | Nagad RSA public key (PEM) for callback verification |
+| `SSLCOMMERZ_STORE_ID`, `SSLCOMMERZ_STORE_PASSWORD` | SSLCommerz (IPN `verify_sign` MD5 chain) |
+| `STEADFAST_API_KEY`, `STEADFAST_SECRET_KEY` | Steadfast courier (Inside Dhaka default) |
+| `PATHAO_CLIENT_ID`, `PATHAO_CLIENT_SECRET`, `PATHAO_USERNAME`, `PATHAO_PASSWORD`, `PATHAO_STORE_ID` | Pathao courier (Outside Dhaka default) |
+| `REDX_ACCESS_TOKEN` | RedX courier (fallback) |
+| `COURIER_DEFAULT`, `COURIER_FALLBACK` | Optional courier routing overrides |
 
-Database backups via Supabase/Neon in production; `npm run backup` for
-file mode. See `docs/BACKUP.md`.
+## Commerce rules (single source of truth)
 
-## Project docs
+- Shipping: Inside Dhaka ৳70 · Outside Dhaka ৳130 · **free over ৳3,500**
+  (editorial, `bd-utils.ts`). The legacy storefront still uses its admin
+  delivery settings until cutover.
+- Promo: `TRAC10` = 10% off the editorial subtotal.
+- Phones: BD mobiles only, normalized to `+8801XXXXXXXXX`.
+- Orders: stock is decremented atomically inside the order transaction;
+  order numbers are sequential `TRAC-1025+`.
 
-- `docs/PROJECT_AUDIT.md` — the live-site audit the rebuild started from
-- `docs/DESIGN_SYSTEM.md` / route `/design-system` — the component system
-- `docs/ARCHITECTURE.md`, `docs/FEATURE_ROADMAP.md`
-- `docs/QA_REPORT.md` — Phase 12 full regression + security results
-- `docs/DEPLOY.md` — go-live runbook & rollback
+## Deploy
 
-## Notes / accepted limits
+Vercel (region `sin1`), staging first — full runbook in `docs/DEPLOY.md`.
+Set the env vars above, run the four `db:*` commands once against the
+production database, then deploy. `vercel.json` is already configured.
 
-- Payments: Cash on Delivery is live. bKash/Nagad toggles exist in admin
-  but the gateways wire only after real merchant onboarding — the site
-  never simulates a payment.
-- The 5 `sample-*` products in the seed catalog are placeholders for
-  layout/testing — delete them in admin before go-live; the 3 Ferrari
-  tees are the real products (live IDs preserved).
-- Store addresses in seed settings are placeholders — fix in
-  Admin → Settings → Stores.
+## Docs
+
+- `CLAUDE.md` — project conventions and per-part build notes (read first)
+- `docs/DEPLOY.md` — staging → production runbook
+- `docs/PART6_QA_AUDIT.md` — QA & performance audit (images, CLS,
+  responsive breakpoints, touch targets, typecheck)
+- `docs/QA_REPORT.md`, `docs/IMPLEMENTATION_PROGRESS.md` — 13-phase log
