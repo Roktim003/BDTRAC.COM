@@ -1,0 +1,76 @@
+/* ==========================================================================
+   TRAC — Design Tokens (Phase 1, Foundation & Design System)
+   Single source of truth for colour, type, spacing, layout, radius,
+   shadow, motion and layering. Components must consume these tokens —
+   never hardcode values that a token covers.
+   Breakpoints (CSS variables cannot drive media queries; use these values):
+     --bp-xs: 480px  small mobile
+     --bp-sm: 640px  standard mobile / large phone
+     --bp-md: 768px  tablet
+     --bp-lg: 1024px laptop
+     --bp-xl: 1280px desktop
+     --bp-2xl: 1536px large desktop
+   ========================================================================== */
+:root {
+  /* ---- Colour (Master Prompt §2) ---- */
+  --color-bg: #f6f5f1;            /* primary background, off-white */
+  --color-surface: #ffffff;       /* cards / raised surfaces */
+  --color-surface-2: #efede7;     /* subtle inset surfaces */
+  --color-ink: #111111;           /* primary text, near-black */
+  --color-ink-2: #3d3d3a;         /* secondary text */
+  --color-muted: #5f5f59;         /* supporting text — AA on off-white (Phase 11) */
+  --color-neutral: #a3a3a3;       /* secondary neutral, disabled */
+  --color-line: #e4e1d9;          /* borders on light bg */
+  --color-accent: #d62b2b;        /* racing red — CTAs, sale, focus */
+  --color-accent-dark: #b81f1f;   /* accent hover/active */
+  --color-accent-soft: #fbecec;   /* accent tint backgrounds */
+  --color-success: #1e7d46;
+  --color-warning: #b7791f;
+  --color-error: #b3261e;
+  --color-info: #175cd3;
+  --color-focus: #d62b2b;
+
+  /* ---- Typography ---- */
+  --font-display: var(--font-archivo), "Archivo", -apple-system, "Segoe UI", sans-serif;
+  --font-body: var(--font-inter), "Inter", -apple-system, "Segoe UI", sans-serif;
+  --text-hero: clamp(3rem, 9vw, 7.375rem);       /* campaign hero headline */
+  --text-display: clamp(2rem, 5vw, 3.625rem);    /* section / page headline */
+  --text-h2: clamp(1.625rem, 3.5vw, 2.375rem);
+  --text-h3: 1.25rem;
+  --text-product: 0.9375rem;                     /* product title */
+  --text-body: 1rem;
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+  --text-price: 1rem;
+  --leading-tight: 1.02;
+  --leading-body: 1.6;
+  --tracking-label: 0.12em;                      /* uppercase labels/nav */
+  --tracking-hero: -0.01em;
+
+  /* ---- Spacing (4px base) ---- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px;
+  --section-y: 64px;                             /* vertical section rhythm */
+
+  /* ---- Layout ---- */
+  --container: 1280px;                           /* content max-width */
+  --container-wide: 1440px;                      /* legacy .wrap pages */
+  --gutter: 24px;                                /* desktop gutter */
+  --gutter-sm: 14px;                             /* mobile gutter */
+  --grid-gap: 18px;
+  --header-h: 76px;
+
+  /* ---- Radius / shadow ---- */
+  --radius-sm: 10px; --radius-md: 14px; --radius-lg: 20px; --radius-pill: 999px;
+  --shadow-sm: 0 2px 8px rgba(17, 17, 17, 0.06);
+  --shadow-md: 0 10px 28px rgba(17, 17, 17, 0.1);
+  --shadow-lg: 0 20px 48px rgba(17, 17, 17, 0.16);
+
+  /* ---- Motion ---- */
+  --dur-fast: 150ms; --dur: 250ms; --dur-slow: 400ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* ---- Layering ---- */
+  --z-header: 60; --z-drawer: 120; --z-modal: 130; --z-toast: 150;
+}

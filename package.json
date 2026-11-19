@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "next": "^15.4.6",
+    "pg": "^8.23.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "pg-mem": "^3.0.14",
+    "typescript": "^5.9.2"
+  },
+  "name": "trac-store",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "backup": "node scripts/backup-data.mjs",
+    "db:migrate": "node scripts/migrate-to-db.mjs"
+  },
+  "version": "1.0.0"
+}
