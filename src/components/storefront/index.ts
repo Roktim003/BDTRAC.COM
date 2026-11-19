@@ -6,4 +6,9 @@
  * Legacy components still live in src/components and src/components/ui and
  * migrate here feature by feature — do not duplicate them.
  */
-export {};
+export { default as Navbar } from "./Navbar";
+export { default as EditorialHero } from "./EditorialHero";
+export { default as ProductGrid } from "./ProductGrid";
+export { default as ProductDrawer, ProductDetailView, SizeGuide } from "./ProductDrawer";
+export { default as EditorialShell } from "./EditorialShell";
+export { default as EditorialImage } from "./EditorialImage";

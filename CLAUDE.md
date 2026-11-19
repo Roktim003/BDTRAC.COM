@@ -148,6 +148,16 @@ Import alias: `@/*` maps to `./src/*` (tsconfig `paths`). No relative
   is a separate, explicitly-approved step if a later part requires it.
 - Production `bdtrac.com` still serves the previous site; deploying this
   codebase follows `docs/DEPLOY.md` and is a separate approved step.
+- Part 3 (2026-11-19): editorial storefront in src/components/storefront
+  (Navbar, EditorialHero, ProductGrid, ProductDrawer, EditorialShell),
+  assembled at /drop-04; slug PDPs at /product/[slug] (SSG). Editorial
+  data mirrors the Prisma seed via src/lib/editorial-catalog.ts and the
+  editorial bag is the zustand bag-store (separate from the legacy cart
+  until the Prisma checkout lands). SiteShell routes /drop-04 and
+  /product/* to EditorialShell; all other routes keep the legacy Shell.
+  Product photography is not shot yet — EditorialImage renders a
+  typographic frame instead of a broken image. Size-guide measurements
+  are the studio reference for the boxy block, pending pattern sign-off.
 - Part 2 (2026-11-19): Prisma data layer + bd-utils added (see §4).
   Seed (`prisma/seed.ts`) holds 6 original TRAC products, 320–480 GSM,
   10 variants each. Known verification limit: the Prisma engine CDN is

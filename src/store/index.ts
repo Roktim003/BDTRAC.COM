@@ -4,3 +4,5 @@
  */
 export { useUiStore } from "./ui-store";
 export type { OverlayKind } from "./ui-store";
+export { useBagStore, useBagCount } from "./bag-store";
+export type { BagLine } from "./bag-store";
