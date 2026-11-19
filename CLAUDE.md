@@ -87,10 +87,26 @@ Import alias: `@/*` maps to `./src/*` (tsconfig `paths`). No relative
   see `src/store/ui-store.ts`. Server data never goes in Zustand.
 - **Zod validates every external boundary**: API route bodies, query
   params, form submissions, env vars. Parse, don't cast.
-- **Prisma**: `@prisma/client` is installed; the schema, generated client
-  and `src/lib/prisma.ts` singleton arrive in the data-model part. Until
-  that migration lands, the existing Postgres doc-store in `src/lib/db.ts`
+- **Prisma** (landed in Part 2): schema in `prisma/schema.prisma`
+  (Product, ProductVariant, Order, OrderItem, SmsLog — money is Int BDT,
+  phones stored normalized, status fields are enums). Prisma 7 rules:
+  generator is `prisma-client` with `output = "../src/generated/prisma"`,
+  the datasource has NO url (connection lives in `prisma.config.ts`,
+  which loads `.env` via dotenv), and the client singleton in
+  `src/lib/prisma.ts` is built with the `@prisma/adapter-pg` adapter.
+  CLI is the `prisma` package pinned to the client version (7.10.1);
+  commands: `npm run db:validate | db:generate | db:push | db:seed`.
+  The generated client is gitignored and regenerated per build
+  (`npm run build` runs `prisma generate` first). Until the route-by-route
+  migration lands, the existing Postgres doc-store in `src/lib/db.ts`
   (`pg`, JSONB) remains the live data layer — do not half-migrate tables.
+- **BD utilities** (`src/lib/bd-utils.ts`, Part 2): canonical `formatBDT`,
+  BD phone zod schema/normalizer (+8801[3-9]…), and the backend shipping
+  rates — Inside Dhaka ৳70, Outside Dhaka ৳130, free when subtotal is
+  OVER ৳3,500. NOTE: the live storefront still uses `src/lib/shipping.ts`
+  rates (৳60/৳120, free ≥ ৳1,500); the two must not be mixed in one
+  calculation, and switching the storefront to the Part 2 rates needs an
+  explicit decision.
 - Icons: `lucide-react` only, sized via props, `aria-hidden` when decorative.
 
 ## 5. Strict TypeScript standards
@@ -132,3 +148,11 @@ Import alias: `@/*` maps to `./src/*` (tsconfig `paths`). No relative
   is a separate, explicitly-approved step if a later part requires it.
 - Production `bdtrac.com` still serves the previous site; deploying this
   codebase follows `docs/DEPLOY.md` and is a separate approved step.
+- Part 2 (2026-11-19): Prisma data layer + bd-utils added (see §4).
+  Seed (`prisma/seed.ts`) holds 6 original TRAC products, 320–480 GSM,
+  10 variants each. Known verification limit: the Prisma engine CDN is
+  unreachable from the Muse VM, so `prisma validate/generate` and the
+  seed itself run on Roktim's PC / Vercel (DATABASE_URL required);
+  in-VM gates were tsc (clean except the two expected generated-client
+  import errors before generate), 29/29 bd-utils unit tests, and static
+  schema/seed checks.
